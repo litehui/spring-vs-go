@@ -1,0 +1,13 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':common:common-core')
+    api project(':common:common-redis')
+    api "cn.dev33:sa-token-spring-boot3-starter:${saTokenVersion}"
+    api "cn.dev33:sa-token-redis-jackson:${saTokenVersion}"
+    api "cn.dev33:sa-token-reactor-spring-boot3-starter:${saTokenVersion}"
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}

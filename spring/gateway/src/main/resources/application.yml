@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos.middleware.svc.cluster.local:8848
+      config:
+        import: nacos:gateway-service.yml?refresh=true
+        server-addr: nacos.middleware.svc.cluster.local:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+      - id: auth-service
+        uri: lb://auth-service
+        predicates:
+        - Path=/api/auth/**
+        filters:
+        - StripPrefix=0
+      - id: user-service
+        uri: lb://user-service
+        predicates:
+        - Path=/api/user/**,/api/buyer/**,/api/seller/**
+        filters:
+        - StripPrefix=0
+      - id: shop-service
+        uri: lb://shop-service
+        predicates:
+        - Path=/api/shop/**
+        filters:
+        - StripPrefix=0
+      - id: product-service
+        uri: lb://product-service
+        predicates:
+        - Path=/api/product/**
+        filters:
+        - StripPrefix=0
+      - id: favorite-service
+        uri: lb://favorite-service
+        predicates:
+        - Path=/api/favorite/**
+        filters:
+        - StripPrefix=0
+
+sa-token:
+  token-name: satoken
+  timeout: 86400
+  is-read-cookie: false
+  is-read-header: true
+  token-style: uuid
+
+logging:
+  level:
+    com.compare: debug

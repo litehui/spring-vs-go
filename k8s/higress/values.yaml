@@ -1,0 +1,6 @@
+global:
+  local: true
+  ingressClass: higress
+higress-console:
+  o11y:
+    enabled: false

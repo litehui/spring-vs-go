@@ -1,0 +1,59 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:postgresql://postgresql.database.svc.cluster.local:5432/user_db
+    username: postgres
+    password: postgres123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: redis-master.cache.svc.cluster.local
+      port: 6379
+      password: redis123
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos.middleware.svc.cluster.local:8848
+      config:
+        import: nacos:user-service.yml?refresh=true
+        server-addr: nacos.middleware.svc.cluster.local:8848
+    stream:
+      bindings:
+        userProducer-out-0:
+          destination: user-topic
+          content-type: application/json
+        userConsumer-in-0:
+          destination: user-topic
+          content-type: application/json
+          group: user-group
+      rocketmq:
+        binder:
+          name-server: rocketmq:9876
+
+sa-token:
+  token-name: satoken
+  timeout: 86400
+  is-read-cookie: false
+  is-read-header: true
+  token-style: uuid
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+logging:
+  level:
+    com.compare: debug

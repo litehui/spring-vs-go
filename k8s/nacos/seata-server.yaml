@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seata-server
+  namespace: middleware
+  labels:
+    app: seata-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seata-server
+  template:
+    metadata:
+      labels:
+        app: seata-server
+    spec:
+      containers:
+      - name: seata-server
+        image: seataio/seata-server:2.5.0
+        ports:
+        - containerPort: 7091
+          name: http
+        - containerPort: 8091
+          name: rpc
+        env:
+        - name: SEATA_IP
+          value: "seata-server.middleware.svc.cluster.local"
+        - name: SEATA_PORT
+          value: "8091"
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seata-server
+  namespace: middleware
+  labels:
+    app: seata-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 7091
+    targetPort: 7091
+    name: http
+  - port: 8091
+    targetPort: 8091
+    name: rpc
+  selector:
+    app: seata-server

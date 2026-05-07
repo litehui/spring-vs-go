@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgpool
+  namespace: database
+  labels:
+    app: pgpool
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pgpool
+  template:
+    metadata:
+      labels:
+        app: pgpool
+    spec:
+      containers:
+      - name: pgpool
+        image: bitnami/pgpool:4
+        ports:
+        - containerPort: 5432
+          name: pgpool
+        env:
+        - name: PGPOOL_BACKEND_NODES
+          value: "0:postgresql-primary:5432:1:PRIMARY:ALLOW_TO_FAILOVER,1:postgresql-replica:5432:1:STANDBY:ALLOW_TO_FAILOVER"
+        - name: PGPOOL_POSTGRES_USERNAME
+          value: postgres
+        - name: PGPOOL_POSTGRES_PASSWORD
+          value: postgres123
+        - name: PGPOOL_SR_CHECK_USER
+          value: postgres
+        - name: PGPOOL_SR_CHECK_PASSWORD
+          value: postgres123
+        - name: PGPOOL_ENABLE_LOAD_BALANCING
+          value: "yes"
+        - name: PGPOOL_SKIP_NODE_PROVISIONING
+          value: "no"
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10

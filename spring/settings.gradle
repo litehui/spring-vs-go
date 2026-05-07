@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'spring-vs-go'
+
+include 'common:common-core'
+include 'common:common-redis'
+include 'common:common-security'
+include 'common:common-feign'
+include 'common:common-mq'
+include 'common:common-log'
+include 'common:common-swagger'
+include 'gateway'
+include 'auth'
+include 'user'
+include 'shop'
+include 'product'
+include 'favorite'

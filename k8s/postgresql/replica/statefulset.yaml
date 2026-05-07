@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-replica
+  namespace: database
+  labels:
+    app: postgresql
+    role: replica
+spec:
+  serviceName: postgresql-replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        role: replica
+    spec:
+      initContainers:
+      - name: setup-replica
+        image: postgres:17
+        command:
+        - /bin/bash
+        - /scripts/setup-replica.sh
+        env:
+        - name: PGPASSWORD
+          value: replicator123
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        - name: scripts
+          mountPath: /scripts
+      containers:
+      - name: postgresql
+        image: postgres:17
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        - name: config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: pg-replica-config
+      - name: scripts
+        configMap:
+          name: pg-replica-config
+          items:
+          - key: setup-replica.sh
+            path: setup-replica.sh
+            mode: 0755
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi

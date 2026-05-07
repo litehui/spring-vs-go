@@ -1,0 +1,13 @@
+apiVersion: networking.higress.io/v1
+kind: McpBridge
+metadata:
+  name: default
+  namespace: higress-system
+spec:
+  registries:
+  - name: nacos
+    type: nacos2
+    domain: nacos.middleware.svc.cluster.local
+    port: 8848
+    nacosGroups:
+    - DEFAULT_GROUP

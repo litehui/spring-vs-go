@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-primary
+  namespace: database
+  labels:
+    app: postgresql
+    role: primary
+spec:
+  serviceName: postgresql-primary
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        role: primary
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:17
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres123
+        - name: POSTGRES_MULTIPLE_DATABASES
+          value: user_db,shop_db,product_db,favorite_db
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        - name: config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: config
+          mountPath: /etc/postgresql/pg_hba.conf
+          subPath: pg_hba.conf
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: pg-primary-config
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
